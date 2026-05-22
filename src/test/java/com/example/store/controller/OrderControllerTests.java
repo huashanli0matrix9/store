@@ -3,6 +3,7 @@ package com.example.store.controller;
 import com.example.store.dto.request.CreateOrderRequest;
 import com.example.store.dto.response.OrderCustomerResponse;
 import com.example.store.dto.response.OrderResponse;
+import com.example.store.exception.NotFoundException;
 import com.example.store.service.OrderService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -72,5 +73,37 @@ class OrderControllerTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$..description").value("Test Order"))
                 .andExpect(jsonPath("$..customer.name").value("John Doe"));
+    }
+
+    @Test
+    void testCreateOrderWithInvalidRequestShouldReturnBadRequest() throws Exception {
+        CreateOrderRequest invalidRequest = new CreateOrderRequest();
+        invalidRequest.setDescription(" ");
+        invalidRequest.setCustomerId(null);
+
+        mockMvc.perform(post("/order")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
+                .andExpect(jsonPath("$.message").value("Request validation failed"))
+                .andExpect(jsonPath("$.path").value("/order"))
+                .andExpect(jsonPath("$.details.description").exists())
+                .andExpect(jsonPath("$.details.customerId").exists());
+    }
+
+    @Test
+    void testCreateOrderWithMissingCustomerShouldReturnNotFound() throws Exception {
+        when(orderService.createOrder(any(CreateOrderRequest.class))).thenThrow(new NotFoundException("Customer not found: 1"));
+
+        mockMvc.perform(post("/order")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createOrderRequest)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.code").value("NOT_FOUND"))
+                .andExpect(jsonPath("$.message").value("Customer not found: 1"))
+                .andExpect(jsonPath("$.path").value("/order"));
     }
 }

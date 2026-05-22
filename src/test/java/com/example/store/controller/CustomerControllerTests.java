@@ -64,4 +64,20 @@ class CustomerControllerTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$..name").value("John Doe"));
     }
+
+    @Test
+    void testCreateCustomerWithBlankNameShouldReturnBadRequest() throws Exception {
+        CreateCustomerRequest invalidRequest = new CreateCustomerRequest();
+        invalidRequest.setName("   ");
+
+        mockMvc.perform(post("/customer")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
+                .andExpect(jsonPath("$.message").value("Request validation failed"))
+                .andExpect(jsonPath("$.path").value("/customer"))
+                .andExpect(jsonPath("$.details.name").exists());
+    }
 }
