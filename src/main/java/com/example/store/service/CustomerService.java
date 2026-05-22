@@ -9,6 +9,7 @@ import com.example.store.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -19,10 +20,12 @@ public class CustomerService {
     private final CustomerRepository customerRepository;
     private final CustomerMapper customerMapper;
 
+    @Transactional(readOnly = true)
     public List<CustomerResponse> getAllCustomers() {
         return customerMapper.customersToCustomerResponses(customerRepository.findAll());
     }
 
+    @Transactional
     public CustomerResponse createCustomer(CreateCustomerRequest request) {
         Customer customer = new Customer();
         customer.setName(request.getName());
