@@ -3,11 +3,8 @@ package com.example.store.controller;
 import com.example.store.entity.Customer;
 import com.example.store.entity.Order;
 import com.example.store.mapper.CustomerMapper;
-import com.example.store.repository.CustomerRepository;
 import com.example.store.repository.OrderRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import lombok.RequiredArgsConstructor;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,15 +16,14 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
-import java.util.Optional;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(OrderController.class)
 @ComponentScan(basePackageClasses = CustomerMapper.class)
-@RequiredArgsConstructor
 class OrderControllerTests {
 
     @Autowired
@@ -38,9 +34,6 @@ class OrderControllerTests {
 
     @MockitoBean
     private OrderRepository orderRepository;
-
-    @MockitoBean
-    private CustomerRepository customerRepository;
 
     private Order order;
     private Customer customer;
@@ -59,8 +52,7 @@ class OrderControllerTests {
 
     @Test
     void testCreateOrder() throws Exception {
-        when(customerRepository.findById(1L)).thenReturn(Optional.of(customer));
-        when(orderRepository.save(order)).thenReturn(order);
+        when(orderRepository.save(any(Order.class))).thenReturn(order);
 
         mockMvc.perform(post("/order")
                         .contentType(MediaType.APPLICATION_JSON)
