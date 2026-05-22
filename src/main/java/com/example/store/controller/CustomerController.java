@@ -1,10 +1,10 @@
 package com.example.store.controller;
 
-import com.example.store.dto.CustomerDTO;
-import com.example.store.entity.Customer;
-import com.example.store.mapper.CustomerMapper;
-import com.example.store.repository.CustomerRepository;
+import com.example.store.dto.request.CreateCustomerRequest;
+import com.example.store.dto.response.CustomerResponse;
+import com.example.store.service.CustomerService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
@@ -17,17 +17,16 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CustomerController {
 
-    private final CustomerRepository customerRepository;
-    private final CustomerMapper customerMapper;
+    private final CustomerService customerService;
 
     @GetMapping
-    public List<CustomerDTO> getAllCustomers() {
-        return customerMapper.customersToCustomerDTOs(customerRepository.findAll());
+    public List<CustomerResponse> getAllCustomers() {
+        return customerService.getAllCustomers();
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public CustomerDTO createCustomer(@RequestBody Customer customer) {
-        return customerMapper.customerToCustomerDTO(customerRepository.save(customer));
+    public CustomerResponse createCustomer(@Valid @RequestBody CreateCustomerRequest request) {
+        return customerService.createCustomer(request);
     }
 }

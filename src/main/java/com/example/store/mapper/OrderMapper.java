@@ -1,19 +1,44 @@
 package com.example.store.mapper;
 
-import com.example.store.dto.OrderCustomerDTO;
-import com.example.store.dto.OrderDTO;
+import com.example.store.dto.response.OrderCustomerResponse;
+import com.example.store.dto.response.OrderResponse;
 import com.example.store.entity.Customer;
 import com.example.store.entity.Order;
 
-import org.mapstruct.Mapper;
+import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring")
-public interface OrderMapper {
-    OrderDTO orderToOrderDTO(Order order);
+@Component
+public class OrderMapper {
+    public OrderResponse orderToOrderResponse(Order order) {
+        if (order == null) {
+            return null;
+        }
 
-    List<OrderDTO> ordersToOrderDTOs(List<Order> orders);
+        OrderResponse response = new OrderResponse();
+        response.setId(order.getId());
+        response.setDescription(order.getDescription());
+        response.setCustomer(toOrderCustomerResponse(order.getCustomer()));
+        return response;
+    }
 
-    OrderCustomerDTO orderToOrderCustomerDTO(Customer customer);
+    public List<OrderResponse> ordersToOrderResponses(List<Order> orders) {
+        if (orders == null) {
+            return Collections.emptyList();
+        }
+        return orders.stream().map(this::orderToOrderResponse).collect(Collectors.toList());
+    }
+
+    private OrderCustomerResponse toOrderCustomerResponse(Customer customer) {
+        if (customer == null) {
+            return null;
+        }
+        OrderCustomerResponse response = new OrderCustomerResponse();
+        response.setId(customer.getId());
+        response.setName(customer.getName());
+        return response;
+    }
 }

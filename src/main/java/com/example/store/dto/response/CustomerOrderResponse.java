@@ -1,9 +1,9 @@
-package com.example.store.dto;
+package com.example.store.dto.response;
 
 import lombok.Data;
 
 @Data
-public class CustomerOrderDTO {
+public class CustomerOrderResponse {
     private Long id;
     private String description;
 }
