@@ -1,0 +1,35 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-rename-order-to-orders
+      author: developer@securitease.com
+      preConditions:
+        - onFail: MARK_RAN
+        - tableExists:
+            tableName: order
+      changes:
+        - sql:
+            sql: ALTER TABLE "order" RENAME TO orders;
+
+  - changeSet:
+      id: 004-rename-order-sequence
+      author: developer@securitease.com
+      preConditions:
+        - onFail: MARK_RAN
+        - sequenceExists:
+            sequenceName: order_id_seq
+      changes:
+        - sql:
+            sql: ALTER SEQUENCE order_id_seq RENAME TO orders_id_seq;
+
+  - changeSet:
+      id: 005-update-orders-id-default
+      author: developer@securitease.com
+      preConditions:
+        - onFail: MARK_RAN
+        - tableExists:
+            tableName: orders
+        - sequenceExists:
+            sequenceName: orders_id_seq
+      changes:
+        - sql:
+            sql: ALTER TABLE orders ALTER COLUMN id SET DEFAULT nextval('orders_id_seq');
