@@ -11,6 +11,7 @@ import com.example.store.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -22,10 +23,12 @@ public class OrderService {
     private final CustomerRepository customerRepository;
     private final OrderMapper orderMapper;
 
+    @Transactional(readOnly = true)
     public List<OrderResponse> getAllOrders() {
         return orderMapper.ordersToOrderResponses(orderRepository.findAll());
     }
 
+    @Transactional
     public OrderResponse createOrder(CreateOrderRequest request) {
         Customer customer = customerRepository.findById(request.getCustomerId())
                 .orElseThrow(() -> new IllegalArgumentException("Customer not found: " + request.getCustomerId()));
