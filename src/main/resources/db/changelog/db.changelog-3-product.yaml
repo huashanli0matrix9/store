@@ -1,0 +1,68 @@
+databaseChangeLog:
+  - changeSet:
+      id: 006-create-product-table
+      author: developer@securitease.com
+      changes:
+        - createTable:
+            tableName: product
+            columns:
+              - column:
+                  name: id
+                  type: BIGSERIAL
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_product
+                    nullable: false
+              - column:
+                  name: description
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 007-create-order-product-table
+      author: developer@securitease.com
+      changes:
+        - createTable:
+            tableName: order_product
+            columns:
+              - column:
+                  name: order_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: product_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+        - addPrimaryKey:
+            tableName: order_product
+            columnNames: order_id, product_id
+            constraintName: pk_order_product
+        - addForeignKeyConstraint:
+            baseTableName: order_product
+            baseColumnNames: order_id
+            referencedTableName: orders
+            referencedColumnNames: id
+            constraintName: fk_order_product_order_id
+            onDelete: CASCADE
+        - addForeignKeyConstraint:
+            baseTableName: order_product
+            baseColumnNames: product_id
+            referencedTableName: product
+            referencedColumnNames: id
+            constraintName: fk_order_product_product_id
+            onDelete: CASCADE
+        - createIndex:
+            tableName: order_product
+            indexName: idx_order_product_order_id
+            columns:
+              - column:
+                  name: order_id
+        - createIndex:
+            tableName: order_product
+            indexName: idx_order_product_product_id
+            columns:
+              - column:
+                  name: product_id
