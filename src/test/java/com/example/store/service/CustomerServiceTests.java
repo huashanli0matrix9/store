@@ -1,6 +1,8 @@
 package com.example.store.service;
 
+import com.example.store.dto.request.CreateCustomerRequest;
 import com.example.store.dto.response.CustomerSummaryResponse;
+import com.example.store.dto.response.CustomerResponse;
 import com.example.store.entity.Customer;
 import com.example.store.mapper.CustomerMapper;
 import com.example.store.repository.CustomerRepository;
@@ -16,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -29,6 +32,27 @@ class CustomerServiceTests {
 
     @InjectMocks
     private CustomerService customerService;
+
+    @Test
+    void createCustomerShouldPersistAndReturnResponse() {
+        CreateCustomerRequest request = new CreateCustomerRequest();
+        request.setName("John Doe");
+
+        Customer saved = new Customer();
+        saved.setId(1L);
+        saved.setName("John Doe");
+
+        CustomerResponse response = new CustomerResponse();
+        response.setId(1L);
+        response.setName("John Doe");
+
+        when(customerRepository.save(any(Customer.class))).thenReturn(saved);
+        when(customerMapper.customerToCustomerResponse(saved)).thenReturn(response);
+
+        CustomerResponse actual = customerService.createCustomer(request);
+        assertEquals(1L, actual.getId());
+        assertEquals("John Doe", actual.getName());
+    }
 
     @Test
     void getCustomersShouldSearchByQueryWhenProvided() {

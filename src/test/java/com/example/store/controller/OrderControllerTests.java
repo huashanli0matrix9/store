@@ -5,6 +5,7 @@ import com.example.store.dto.response.OrderCustomerResponse;
 import com.example.store.dto.response.OrderResponse;
 import com.example.store.dto.response.OrderSummaryResponse;
 import com.example.store.dto.response.ProductSummaryResponse;
+import com.example.store.exception.BadRequestException;
 import com.example.store.exception.NotFoundException;
 import com.example.store.service.OrderService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -148,6 +149,21 @@ class OrderControllerTests {
                 .andExpect(jsonPath("$.status").value(404))
                 .andExpect(jsonPath("$.code").value("NOT_FOUND"))
                 .andExpect(jsonPath("$.message").value("Customer not found: 1"))
+                .andExpect(jsonPath("$.path").value("/order"));
+    }
+
+    @Test
+    void testCreateOrderWithInvalidProductsShouldReturnBadRequest() throws Exception {
+        when(orderService.createOrder(any(CreateOrderRequest.class)))
+                .thenThrow(new BadRequestException("Products not found: [999]"));
+
+        mockMvc.perform(post("/order")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createOrderRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
+                .andExpect(jsonPath("$.message").value("Products not found: [999]"))
                 .andExpect(jsonPath("$.path").value("/order"));
     }
 }

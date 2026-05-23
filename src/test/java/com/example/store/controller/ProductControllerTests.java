@@ -99,4 +99,20 @@ class ProductControllerTests {
                 .andExpect(jsonPath("$.message").value("Product not found: 99"))
                 .andExpect(jsonPath("$.path").value("/products/99"));
     }
+
+    @Test
+    void testCreateProductValidationFailure() throws Exception {
+        CreateProductRequest invalidRequest = new CreateProductRequest();
+        invalidRequest.setDescription(" ");
+
+        mockMvc.perform(post("/products")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
+                .andExpect(jsonPath("$.message").value("Request validation failed"))
+                .andExpect(jsonPath("$.path").value("/products"))
+                .andExpect(jsonPath("$.details.description").exists());
+    }
 }
