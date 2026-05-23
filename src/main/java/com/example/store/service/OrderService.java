@@ -29,6 +29,12 @@ public class OrderService {
         return orderMapper.ordersToOrderResponses(orderRepository.findAll());
     }
 
+    @Transactional(readOnly = true)
+    public OrderResponse getOrderById(Long id) {
+        Order order = orderRepository.findById(id).orElseThrow(() -> new NotFoundException("Order not found: " + id));
+        return orderMapper.orderToOrderResponse(order);
+    }
+
     @Transactional
     public OrderResponse createOrder(CreateOrderRequest request) {
         Customer customer = customerRepository.findById(request.getCustomerId())

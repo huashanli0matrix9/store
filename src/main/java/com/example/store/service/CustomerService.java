@@ -22,7 +22,15 @@ public class CustomerService {
 
     @Transactional(readOnly = true)
     public List<CustomerResponse> getAllCustomers() {
-        return customerMapper.customersToCustomerResponses(customerRepository.findAll());
+        return getCustomers(null);
+    }
+
+    @Transactional(readOnly = true)
+    public List<CustomerResponse> getCustomers(String query) {
+        if (query == null || query.isBlank()) {
+            return customerMapper.customersToCustomerResponses(customerRepository.findAll());
+        }
+        return customerMapper.customersToCustomerResponses(customerRepository.findByNameContainingIgnoreCase(query.trim()));
     }
 
     @Transactional

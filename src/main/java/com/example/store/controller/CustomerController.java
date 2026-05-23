@@ -20,8 +20,8 @@ public class CustomerController {
     private final CustomerService customerService;
 
     @GetMapping
-    public List<CustomerResponse> getAllCustomers() {
-        return customerService.getAllCustomers();
+    public List<CustomerResponse> getAllCustomers(@RequestParam(required = false) String query) {
+        return customerService.getCustomers(query);
     }
 
     @PostMapping
