@@ -4,10 +4,13 @@ import com.example.store.dto.request.CreateOrderRequest;
 import com.example.store.dto.response.OrderResponse;
 import com.example.store.entity.Customer;
 import com.example.store.entity.Order;
+import com.example.store.entity.Product;
+import com.example.store.exception.BadRequestException;
 import com.example.store.exception.NotFoundException;
 import com.example.store.mapper.OrderMapper;
 import com.example.store.repository.CustomerRepository;
 import com.example.store.repository.OrderRepository;
+import com.example.store.repository.ProductRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,10 +18,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -29,6 +34,9 @@ class OrderServiceTests {
 
     @Mock
     private CustomerRepository customerRepository;
+
+    @Mock
+    private ProductRepository productRepository;
 
     @Mock
     private OrderMapper orderMapper;
@@ -43,6 +51,7 @@ class OrderServiceTests {
         request = new CreateOrderRequest();
         request.setDescription("Test Order");
         request.setCustomerId(999L);
+        request.setProductIds(List.of(1L, 2L));
     }
 
     @Test
@@ -79,5 +88,47 @@ class OrderServiceTests {
     void getOrderByIdShouldThrowNotFoundWhenMissing() {
         when(orderRepository.findById(111L)).thenReturn(Optional.empty());
         assertThrows(NotFoundException.class, () -> orderService.getOrderById(111L));
+    }
+
+    @Test
+    void createOrderShouldReturnResponseWhenProductIdsAreValid() {
+        Customer customer = new Customer();
+        customer.setId(999L);
+
+        Product p1 = new Product();
+        p1.setId(1L);
+        Product p2 = new Product();
+        p2.setId(2L);
+
+        Order savedOrder = new Order();
+        savedOrder.setId(200L);
+        savedOrder.setDescription("Test Order");
+        savedOrder.setCustomer(customer);
+        savedOrder.setProducts(List.of(p1, p2));
+
+        OrderResponse response = new OrderResponse();
+        response.setId(200L);
+        response.setDescription("Test Order");
+
+        when(customerRepository.findById(999L)).thenReturn(Optional.of(customer));
+        when(productRepository.findAllById(List.of(1L, 2L))).thenReturn(List.of(p1, p2));
+        when(orderRepository.save(any(Order.class))).thenReturn(savedOrder);
+        when(orderMapper.orderToOrderResponse(savedOrder)).thenReturn(response);
+
+        OrderResponse actual = orderService.createOrder(request);
+        assertEquals(200L, actual.getId());
+    }
+
+    @Test
+    void createOrderShouldThrowBadRequestWhenAnyProductIsMissing() {
+        Customer customer = new Customer();
+        customer.setId(999L);
+        Product p1 = new Product();
+        p1.setId(1L);
+
+        when(customerRepository.findById(999L)).thenReturn(Optional.of(customer));
+        when(productRepository.findAllById(List.of(1L, 2L))).thenReturn(List.of(p1));
+
+        assertThrows(BadRequestException.class, () -> orderService.createOrder(request));
     }
 }

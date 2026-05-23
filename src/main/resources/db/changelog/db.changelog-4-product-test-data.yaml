@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - changeSet:
+      id: 008-product-test-data
+      author: developer@securitease.com
+      changes:
+        - sqlFile:
+            path: db/changelog/product-test-data.sql

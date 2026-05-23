@@ -2,8 +2,10 @@ package com.example.store.mapper;
 
 import com.example.store.dto.response.OrderCustomerResponse;
 import com.example.store.dto.response.OrderResponse;
+import com.example.store.dto.response.ProductSummaryResponse;
 import com.example.store.entity.Customer;
 import com.example.store.entity.Order;
+import com.example.store.entity.Product;
 
 import org.springframework.stereotype.Component;
 
@@ -22,6 +24,7 @@ public class OrderMapper {
         response.setId(order.getId());
         response.setDescription(order.getDescription());
         response.setCustomer(toOrderCustomerResponse(order.getCustomer()));
+        response.setProducts(toProductSummaryResponses(order.getProducts()));
         return response;
     }
 
@@ -39,6 +42,23 @@ public class OrderMapper {
         OrderCustomerResponse response = new OrderCustomerResponse();
         response.setId(customer.getId());
         response.setName(customer.getName());
+        return response;
+    }
+
+    private List<ProductSummaryResponse> toProductSummaryResponses(List<Product> products) {
+        if (products == null) {
+            return Collections.emptyList();
+        }
+        return products.stream().map(this::toProductSummaryResponse).collect(Collectors.toList());
+    }
+
+    private ProductSummaryResponse toProductSummaryResponse(Product product) {
+        if (product == null) {
+            return null;
+        }
+        ProductSummaryResponse response = new ProductSummaryResponse();
+        response.setId(product.getId());
+        response.setDescription(product.getDescription());
         return response;
     }
 }

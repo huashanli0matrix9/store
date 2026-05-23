@@ -3,6 +3,7 @@ package com.example.store.controller;
 import com.example.store.dto.request.CreateOrderRequest;
 import com.example.store.dto.response.OrderCustomerResponse;
 import com.example.store.dto.response.OrderResponse;
+import com.example.store.dto.response.ProductSummaryResponse;
 import com.example.store.exception.NotFoundException;
 import com.example.store.service.OrderService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,6 +43,7 @@ class OrderControllerTests {
         createOrderRequest = new CreateOrderRequest();
         createOrderRequest.setDescription("Test Order");
         createOrderRequest.setCustomerId(1L);
+        createOrderRequest.setProductIds(List.of(10L, 11L));
 
         OrderCustomerResponse customer = new OrderCustomerResponse();
         customer.setId(1L);
@@ -51,6 +53,13 @@ class OrderControllerTests {
         orderResponse.setId(1L);
         orderResponse.setDescription("Test Order");
         orderResponse.setCustomer(customer);
+        ProductSummaryResponse p1 = new ProductSummaryResponse();
+        p1.setId(10L);
+        p1.setDescription("Keyboard");
+        ProductSummaryResponse p2 = new ProductSummaryResponse();
+        p2.setId(11L);
+        p2.setDescription("Mouse");
+        orderResponse.setProducts(List.of(p1, p2));
     }
 
     @Test
@@ -62,7 +71,8 @@ class OrderControllerTests {
                         .content(objectMapper.writeValueAsString(createOrderRequest)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.description").value("Test Order"))
-                .andExpect(jsonPath("$.customer.name").value("John Doe"));
+                .andExpect(jsonPath("$.customer.name").value("John Doe"))
+                .andExpect(jsonPath("$.products[0].description").value("Keyboard"));
     }
 
     @Test
@@ -71,8 +81,9 @@ class OrderControllerTests {
 
         mockMvc.perform(get("/order"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$..description").value("Test Order"))
-                .andExpect(jsonPath("$..customer.name").value("John Doe"));
+                .andExpect(jsonPath("$[0].description").value("Test Order"))
+                .andExpect(jsonPath("$[0].customer.name").value("John Doe"))
+                .andExpect(jsonPath("$[0].products[0].description").value("Keyboard"));
     }
 
     @Test
@@ -83,7 +94,8 @@ class OrderControllerTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.description").value("Test Order"))
-                .andExpect(jsonPath("$.customer.name").value("John Doe"));
+                .andExpect(jsonPath("$.customer.name").value("John Doe"))
+                .andExpect(jsonPath("$.products[1].description").value("Mouse"));
     }
 
     @Test
@@ -103,6 +115,7 @@ class OrderControllerTests {
         CreateOrderRequest invalidRequest = new CreateOrderRequest();
         invalidRequest.setDescription(" ");
         invalidRequest.setCustomerId(null);
+        invalidRequest.setProductIds(List.of());
 
         mockMvc.perform(post("/order")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -113,7 +126,8 @@ class OrderControllerTests {
                 .andExpect(jsonPath("$.message").value("Request validation failed"))
                 .andExpect(jsonPath("$.path").value("/order"))
                 .andExpect(jsonPath("$.details.description").exists())
-                .andExpect(jsonPath("$.details.customerId").exists());
+                .andExpect(jsonPath("$.details.customerId").exists())
+                .andExpect(jsonPath("$.details.productIds").exists());
     }
 
     @Test
