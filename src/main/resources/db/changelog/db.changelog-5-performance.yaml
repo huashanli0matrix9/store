@@ -1,0 +1,39 @@
+databaseChangeLog:
+  - changeSet:
+      id: 009-create-index-orders-customer-id
+      author: developer@securitease.com
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            indexExists:
+              tableName: orders
+              indexName: idx_orders_customer_id
+      changes:
+        - createIndex:
+            tableName: orders
+            indexName: idx_orders_customer_id
+            columns:
+              - column:
+                  name: customer_id
+
+  - changeSet:
+      id: 010-enable-pg-trgm
+      author: developer@securitease.com
+      dbms: postgresql
+      changes:
+        - sql:
+            sql: CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+  - changeSet:
+      id: 011-create-customer-name-trgm-index
+      author: developer@securitease.com
+      dbms: postgresql
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            indexExists:
+              tableName: customer
+              indexName: idx_customer_name_trgm
+      changes:
+        - sql:
+            sql: CREATE INDEX idx_customer_name_trgm ON customer USING gin (name gin_trgm_ops);

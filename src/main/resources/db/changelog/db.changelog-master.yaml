@@ -9,3 +9,5 @@ databaseChangeLog:
       file: db/changelog/db.changelog-3-product.yaml
   - include:
       file: db/changelog/db.changelog-4-product-test-data.yaml
+  - include:
+      file: db/changelog/db.changelog-5-performance.yaml
