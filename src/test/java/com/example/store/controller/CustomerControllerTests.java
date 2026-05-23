@@ -58,9 +58,18 @@ class CustomerControllerTests {
 
     @Test
     void testGetAllCustomers() throws Exception {
-        when(customerService.getAllCustomers()).thenReturn(List.of(customerResponse));
+        when(customerService.getCustomers(null)).thenReturn(List.of(customerResponse));
 
         mockMvc.perform(get("/customer"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$..name").value("John Doe"));
+    }
+
+    @Test
+    void testGetCustomersWithQuery() throws Exception {
+        when(customerService.getCustomers("john")).thenReturn(List.of(customerResponse));
+
+        mockMvc.perform(get("/customer").param("query", "john"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$..name").value("John Doe"));
     }

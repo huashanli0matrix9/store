@@ -76,6 +76,29 @@ class OrderControllerTests {
     }
 
     @Test
+    void testGetOrderById() throws Exception {
+        when(orderService.getOrderById(1L)).thenReturn(orderResponse);
+
+        mockMvc.perform(get("/order/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.description").value("Test Order"))
+                .andExpect(jsonPath("$.customer.name").value("John Doe"));
+    }
+
+    @Test
+    void testGetOrderByIdNotFound() throws Exception {
+        when(orderService.getOrderById(99L)).thenThrow(new NotFoundException("Order not found: 99"));
+
+        mockMvc.perform(get("/order/99"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.code").value("NOT_FOUND"))
+                .andExpect(jsonPath("$.message").value("Order not found: 99"))
+                .andExpect(jsonPath("$.path").value("/order/99"));
+    }
+
+    @Test
     void testCreateOrderWithInvalidRequestShouldReturnBadRequest() throws Exception {
         CreateOrderRequest invalidRequest = new CreateOrderRequest();
         invalidRequest.setDescription(" ");
