@@ -4,6 +4,7 @@ import com.example.store.dto.response.CustomerResponse;
 import com.example.store.dto.response.CustomerOrderResponse;
 import com.example.store.entity.Customer;
 import com.example.store.entity.Order;
+import com.example.store.dto.response.CustomerSummaryResponse;
 
 import org.springframework.stereotype.Component;
 
@@ -32,6 +33,16 @@ public class CustomerMapper {
         return customers.stream()
                 .map(this::customerToCustomerResponse)
                 .collect(Collectors.toList());
+    }
+
+    public CustomerSummaryResponse customerToCustomerSummaryResponse(Customer customer) {
+        if (customer == null) {
+            return null;
+        }
+        CustomerSummaryResponse response = new CustomerSummaryResponse();
+        response.setId(customer.getId());
+        response.setName(customer.getName());
+        return response;
     }
 
     private List<CustomerOrderResponse> toCustomerOrderResponses(List<Order> orders) {
