@@ -2,6 +2,7 @@ package com.example.store.service;
 
 import com.example.store.dto.request.CreateOrderRequest;
 import com.example.store.dto.response.OrderResponse;
+import com.example.store.dto.response.OrderSummaryResponse;
 import com.example.store.entity.Customer;
 import com.example.store.entity.Order;
 import com.example.store.entity.Product;
@@ -17,6 +18,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -130,5 +134,24 @@ class OrderServiceTests {
         when(productRepository.findAllById(List.of(1L, 2L))).thenReturn(List.of(p1));
 
         assertThrows(BadRequestException.class, () -> orderService.createOrder(request));
+    }
+
+    @Test
+    void getAllOrdersShouldReturnPagedSummaries() {
+        Pageable pageable = PageRequest.of(0, 20);
+        Order order = new Order();
+        order.setId(1L);
+        order.setDescription("Summary Order");
+
+        OrderSummaryResponse summaryResponse = new OrderSummaryResponse();
+        summaryResponse.setId(1L);
+        summaryResponse.setDescription("Summary Order");
+
+        when(orderRepository.findAll(pageable)).thenReturn(new PageImpl<>(List.of(order), pageable, 1));
+        when(orderMapper.orderToOrderSummaryResponse(order)).thenReturn(summaryResponse);
+
+        var actual = orderService.getAllOrders(pageable);
+        assertEquals(1, actual.getTotalElements());
+        assertEquals("Summary Order", actual.getContent().get(0).getDescription());
     }
 }

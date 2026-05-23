@@ -2,6 +2,7 @@ package com.example.store.service;
 
 import com.example.store.dto.request.CreateOrderRequest;
 import com.example.store.dto.response.OrderResponse;
+import com.example.store.dto.response.OrderSummaryResponse;
 import com.example.store.entity.Customer;
 import com.example.store.entity.Order;
 import com.example.store.entity.Product;
@@ -16,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.HashSet;
 import java.util.List;
@@ -31,8 +34,8 @@ public class OrderService {
     private final OrderMapper orderMapper;
 
     @Transactional(readOnly = true)
-    public List<OrderResponse> getAllOrders() {
-        return orderMapper.ordersToOrderResponses(orderRepository.findAll());
+    public Page<OrderSummaryResponse> getAllOrders(Pageable pageable) {
+        return orderRepository.findAll(pageable).map(orderMapper::orderToOrderSummaryResponse);
     }
 
     @Transactional(readOnly = true)

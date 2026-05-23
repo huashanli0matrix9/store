@@ -2,11 +2,14 @@ package com.example.store.service;
 
 import com.example.store.dto.request.CreateProductRequest;
 import com.example.store.dto.response.ProductResponse;
+import com.example.store.dto.response.ProductSummaryResponse;
 import com.example.store.entity.Product;
 import com.example.store.exception.NotFoundException;
 import com.example.store.mapper.ProductMapper;
 import com.example.store.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,8 +31,8 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public List<ProductResponse> getAllProducts() {
-        return productMapper.productsToProductResponses(productRepository.findAll());
+    public Page<ProductSummaryResponse> getAllProducts(Pageable pageable) {
+        return productRepository.findAll(pageable).map(productMapper::productToProductSummaryResponse);
     }
 
     @Transactional(readOnly = true)

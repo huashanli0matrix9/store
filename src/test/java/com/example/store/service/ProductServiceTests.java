@@ -2,6 +2,7 @@ package com.example.store.service;
 
 import com.example.store.dto.request.CreateProductRequest;
 import com.example.store.dto.response.ProductResponse;
+import com.example.store.dto.response.ProductSummaryResponse;
 import com.example.store.entity.Product;
 import com.example.store.exception.NotFoundException;
 import com.example.store.mapper.ProductMapper;
@@ -12,7 +13,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -79,5 +84,24 @@ class ProductServiceTests {
     void getProductByIdShouldThrowNotFoundWhenMissing() {
         when(productRepository.findById(100L)).thenReturn(Optional.empty());
         assertThrows(NotFoundException.class, () -> productService.getProductById(100L));
+    }
+
+    @Test
+    void getAllProductsShouldReturnPagedSummaries() {
+        Pageable pageable = PageRequest.of(0, 20);
+        Product product = new Product();
+        product.setId(1L);
+        product.setDescription("Keyboard");
+
+        ProductSummaryResponse summaryResponse = new ProductSummaryResponse();
+        summaryResponse.setId(1L);
+        summaryResponse.setDescription("Keyboard");
+
+        when(productRepository.findAll(pageable)).thenReturn(new PageImpl<>(List.of(product), pageable, 1));
+        when(productMapper.productToProductSummaryResponse(product)).thenReturn(summaryResponse);
+
+        var actual = productService.getAllProducts(pageable);
+        assertEquals(1, actual.getTotalElements());
+        assertEquals("Keyboard", actual.getContent().get(0).getDescription());
     }
 }

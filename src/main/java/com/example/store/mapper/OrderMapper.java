@@ -2,6 +2,7 @@ package com.example.store.mapper;
 
 import com.example.store.dto.response.OrderCustomerResponse;
 import com.example.store.dto.response.OrderResponse;
+import com.example.store.dto.response.OrderSummaryResponse;
 import com.example.store.dto.response.ProductSummaryResponse;
 import com.example.store.entity.Customer;
 import com.example.store.entity.Order;
@@ -33,6 +34,16 @@ public class OrderMapper {
             return Collections.emptyList();
         }
         return orders.stream().map(this::orderToOrderResponse).collect(Collectors.toList());
+    }
+
+    public OrderSummaryResponse orderToOrderSummaryResponse(Order order) {
+        if (order == null) {
+            return null;
+        }
+        OrderSummaryResponse response = new OrderSummaryResponse();
+        response.setId(order.getId());
+        response.setDescription(order.getDescription());
+        return response;
     }
 
     private OrderCustomerResponse toOrderCustomerResponse(Customer customer) {

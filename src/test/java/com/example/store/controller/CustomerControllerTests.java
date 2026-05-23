@@ -2,6 +2,7 @@ package com.example.store.controller;
 
 import com.example.store.dto.request.CreateCustomerRequest;
 import com.example.store.dto.response.CustomerResponse;
+import com.example.store.dto.response.CustomerSummaryResponse;
 import com.example.store.service.CustomerService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -9,6 +10,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -33,6 +36,7 @@ class CustomerControllerTests {
     private CustomerService customerService;
 
     private CustomerResponse customerResponse;
+    private CustomerSummaryResponse customerSummaryResponse;
     private CreateCustomerRequest createCustomerRequest;
 
     @BeforeEach
@@ -43,6 +47,10 @@ class CustomerControllerTests {
         customerResponse = new CustomerResponse();
         customerResponse.setId(1L);
         customerResponse.setName("John Doe");
+
+        customerSummaryResponse = new CustomerSummaryResponse();
+        customerSummaryResponse.setId(1L);
+        customerSummaryResponse.setName("John Doe");
     }
 
     @Test
@@ -58,20 +66,22 @@ class CustomerControllerTests {
 
     @Test
     void testGetAllCustomers() throws Exception {
-        when(customerService.getCustomers(null)).thenReturn(List.of(customerResponse));
+        when(customerService.getCustomers(any(), any()))
+                .thenReturn(new PageImpl<>(List.of(customerSummaryResponse), PageRequest.of(0, 20), 1));
 
         mockMvc.perform(get("/customer"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$..name").value("John Doe"));
+                .andExpect(jsonPath("$.content[0].name").value("John Doe"));
     }
 
     @Test
     void testGetCustomersWithQuery() throws Exception {
-        when(customerService.getCustomers("john")).thenReturn(List.of(customerResponse));
+        when(customerService.getCustomers(any(), any()))
+                .thenReturn(new PageImpl<>(List.of(customerSummaryResponse), PageRequest.of(0, 20), 1));
 
         mockMvc.perform(get("/customer").param("query", "john"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$..name").value("John Doe"));
+                .andExpect(jsonPath("$.content[0].name").value("John Doe"));
     }
 
     @Test

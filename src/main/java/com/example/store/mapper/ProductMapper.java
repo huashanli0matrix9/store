@@ -1,6 +1,7 @@
 package com.example.store.mapper;
 
 import com.example.store.dto.response.ProductResponse;
+import com.example.store.dto.response.ProductSummaryResponse;
 import com.example.store.entity.Order;
 import com.example.store.entity.Product;
 import org.springframework.stereotype.Component;
@@ -28,6 +29,16 @@ public class ProductMapper {
             return Collections.emptyList();
         }
         return products.stream().map(this::productToProductResponse).collect(Collectors.toList());
+    }
+
+    public ProductSummaryResponse productToProductSummaryResponse(Product product) {
+        if (product == null) {
+            return null;
+        }
+        ProductSummaryResponse response = new ProductSummaryResponse();
+        response.setId(product.getId());
+        response.setDescription(product.getDescription());
+        return response;
     }
 
     private List<Long> toOrderIds(List<Order> orders) {

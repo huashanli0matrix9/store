@@ -2,6 +2,7 @@ package com.example.store.controller;
 
 import com.example.store.dto.request.CreateProductRequest;
 import com.example.store.dto.response.ProductResponse;
+import com.example.store.dto.response.ProductSummaryResponse;
 import com.example.store.exception.NotFoundException;
 import com.example.store.service.ProductService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,6 +10,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -35,6 +38,7 @@ class ProductControllerTests {
     private ProductService productService;
 
     private ProductResponse productResponse;
+    private ProductSummaryResponse productSummaryResponse;
     private CreateProductRequest createProductRequest;
 
     @BeforeEach
@@ -46,6 +50,10 @@ class ProductControllerTests {
         productResponse.setId(1L);
         productResponse.setDescription("Keyboard");
         productResponse.setOrderIds(List.of(100L));
+
+        productSummaryResponse = new ProductSummaryResponse();
+        productSummaryResponse.setId(1L);
+        productSummaryResponse.setDescription("Keyboard");
     }
 
     @Test
@@ -62,11 +70,12 @@ class ProductControllerTests {
 
     @Test
     void testGetAllProducts() throws Exception {
-        when(productService.getAllProducts()).thenReturn(List.of(productResponse));
+        when(productService.getAllProducts(any()))
+                .thenReturn(new PageImpl<>(List.of(productSummaryResponse), PageRequest.of(0, 20), 1));
 
         mockMvc.perform(get("/products"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].description").value("Keyboard"));
+                .andExpect(jsonPath("$.content[0].description").value("Keyboard"));
     }
 
     @Test
