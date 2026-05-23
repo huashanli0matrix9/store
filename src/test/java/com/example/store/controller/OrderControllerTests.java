@@ -3,6 +3,7 @@ package com.example.store.controller;
 import com.example.store.dto.request.CreateOrderRequest;
 import com.example.store.dto.response.OrderCustomerResponse;
 import com.example.store.dto.response.OrderResponse;
+import com.example.store.dto.response.OrderSummaryResponse;
 import com.example.store.dto.response.ProductSummaryResponse;
 import com.example.store.exception.NotFoundException;
 import com.example.store.service.OrderService;
@@ -12,6 +13,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -36,6 +39,7 @@ class OrderControllerTests {
     private OrderService orderService;
 
     private OrderResponse orderResponse;
+    private OrderSummaryResponse orderSummaryResponse;
     private CreateOrderRequest createOrderRequest;
 
     @BeforeEach
@@ -60,6 +64,10 @@ class OrderControllerTests {
         p2.setId(11L);
         p2.setDescription("Mouse");
         orderResponse.setProducts(List.of(p1, p2));
+
+        orderSummaryResponse = new OrderSummaryResponse();
+        orderSummaryResponse.setId(1L);
+        orderSummaryResponse.setDescription("Test Order");
     }
 
     @Test
@@ -77,13 +85,12 @@ class OrderControllerTests {
 
     @Test
     void testGetOrder() throws Exception {
-        when(orderService.getAllOrders()).thenReturn(List.of(orderResponse));
+        when(orderService.getAllOrders(any()))
+                .thenReturn(new PageImpl<>(List.of(orderSummaryResponse), PageRequest.of(0, 20), 1));
 
         mockMvc.perform(get("/order"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].description").value("Test Order"))
-                .andExpect(jsonPath("$[0].customer.name").value("John Doe"))
-                .andExpect(jsonPath("$[0].products[0].description").value("Keyboard"));
+                .andExpect(jsonPath("$.content[0].description").value("Test Order"));
     }
 
     @Test
