@@ -2,15 +2,16 @@ package com.example.store.controller;
 
 import com.example.store.dto.request.CreateCustomerRequest;
 import com.example.store.dto.response.CustomerResponse;
+import com.example.store.dto.response.CustomerSummaryResponse;
 import com.example.store.service.CustomerService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/customer")
@@ -20,8 +21,9 @@ public class CustomerController {
     private final CustomerService customerService;
 
     @GetMapping
-    public List<CustomerResponse> getAllCustomers(@RequestParam(required = false) String query) {
-        return customerService.getCustomers(query);
+    public Page<CustomerSummaryResponse> getAllCustomers(
+            @RequestParam(required = false) String query, Pageable pageable) {
+        return customerService.getCustomers(query, pageable);
     }
 
     @PostMapping
