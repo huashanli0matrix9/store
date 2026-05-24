@@ -15,10 +15,10 @@ import com.example.store.repository.ProductRepository;
 
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
@@ -46,7 +46,8 @@ public class OrderService {
 
     @Transactional
     public OrderResponse createOrder(CreateOrderRequest request) {
-        Customer customer = customerRepository.findById(request.getCustomerId())
+        Customer customer = customerRepository
+                .findById(request.getCustomerId())
                 .orElseThrow(() -> new NotFoundException("Customer not found: " + request.getCustomerId()));
         List<Product> products = productRepository.findAllById(request.getProductIds());
         validateAllRequestedProductsExist(request.getProductIds(), products);

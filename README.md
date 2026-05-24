@@ -1,72 +1,154 @@
-# Store Application
-The Store application keeps track of customers and orders in a database.
+# Store API
 
-# Assumptions
-This README assumes you're using a posix environment. It's possible to run this on Windows as well:
-* Instead of `./gradlew` use `gradlew.bat`
-* The syntax for creating the Docker container is different. You could also install PostgreSQL on bare metal if you prefer
+Spring Boot backend for managing customers, orders, and products with PostgreSQL + Liquibase.
 
+## Project Overview
+This project implements a production-oriented REST API with:
+- Layered architecture (`Controller -> Service -> Repository`)
+- DTO-based API contracts (no direct JPA entity exposure)
+- Validation and global error handling
+- Product support with `Order <-> Product` many-to-many relationship
+- Pagination and list/detail response separation
+- Audit fields and optimistic locking
+- Automated tests, Docker setup, and CI workflow
 
-# Prerequisites
-This service assumes the presence of a postgresql 16.2 database server running on localhost:5433 (note the non-standard port)
-It assumes a username and password `admin:admin` can be used.
-It assumes there's already a database called `store`
+## Implemented Requirements
+- Customer APIs with optional query search (`/customer?query=...`)
+- Order APIs including detail lookup (`/order/{id}`)
+- Product APIs (`/products`, `/products/{id}`)
+- Paginated list endpoints using `page`, `size`, `sort`
+- Safe error responses via `ApiErrorResponse`
+- PostgreSQL schema/versioning via Liquibase
 
-You can start the PostgreSQL instance like this:
-```shell
-docker run -d \
-  --name postgres \
-  --restart always \
-  -e POSTGRES_USER=admin \
-  -e POSTGRES_PASSWORD=admin \
-  -e POSTGRES_DB=store \
-  -v postgres:/var/lib/postgresql/data \
-  -p 5433:5432 \
-  postgres:16.2 \
-  postgres -c wal_level=logical
+## Architecture
+- **Controller**: HTTP contract, validation triggering, response status
+- **Service**: business rules, transaction boundaries, exception decisions
+- **Repository**: JPA data access and query definitions
+- **Mapper (`@Component`)**: explicit entity-to-DTO mapping
+
+## API Endpoints
+### Customer
+- `GET /customer` (paginated summary list)
+- `GET /customer?query=...` (paginated search)
+- `POST /customer`
+
+### Order
+- `GET /order` (paginated summary list)
+- `GET /order/{id}` (detail)
+- `POST /order`
+
+### Product
+- `GET /products` (paginated summary list)
+- `GET /products/{id}` (detail)
+- `POST /products`
+
+## Database Design (High Level)
+- `customer`
+- `orders` (FK: `customer_id -> customer.id`)
+- `product`
+- `order_product` (join table for many-to-many)
+
+Additional database concerns:
+- Liquibase-managed schema/data migrations
+- Performance indexes (including trigram search index for `customer.name`)
+- Audit fields:
+  - `created_at`
+  - `updated_at`
+  - `version` (optimistic locking)
+
+## Security Considerations
+This project intentionally **does not** include authentication/authorization in this scope, but includes defensive backend practices:
+- DTO contracts (no entity exposure)
+- Bean validation on request DTOs
+- Centralized exception handling with safe, generic 500 responses
+- Server-side logging for unexpected exceptions
+- Externalized datasource configuration via env vars
+
+## Performance Considerations
+- Pagination for list endpoints
+- Configured default/max page size:
+  - default: `50`
+  - max: `100`
+- Summary DTOs for list endpoints to reduce payload size
+- Detail DTOs for richer single-resource responses
+- `@EntityGraph` on order detail fetch to intentionally load customer/products
+
+## Testing
+The project includes:
+- Controller tests (`MockMvc`) for success + validation + not found + paginated responses
+- Service tests (Mockito) for business flow and exception paths
+- Repository tests (`@DataJpaTest`) for search, relationships, and persistence behavior
+- Audit persistence tests for `createdAt/updatedAt/version`
+
+Run tests:
+```bash
+./gradlew clean test
 ```
 
-# Running the application
-You should be able to run the service using
-```shell
+## Run Locally (Without Docker)
+### Prerequisites
+- JDK 17
+- PostgreSQL running and reachable
+
+Default app configuration expects:
+- host: `localhost`
+- port: `5433`
+- db: `store`
+- user: `admin`
+- password: `admin`
+
+You can override using environment variables:
+- `SPRING_DATASOURCE_URL`
+- `SPRING_DATASOURCE_USERNAME`
+- `SPRING_DATASOURCE_PASSWORD`
+
+Start app:
+```bash
 ./gradlew bootRun
 ```
 
-The application uses Liquibase to migrate the schema. Some sample data is provided. You can create more data by reading the documentation in utils/README.md
+## Run With Docker Compose
+Build and start:
+```bash
+docker compose up --build
+```
 
-# Data model
-An order has an ID, a description, and is associated with the customer which made the order.
-A customer has an ID, a name, and 0 or more orders.
+Services:
+- App: `http://localhost:8080`
+- PostgreSQL: `localhost:5433`
 
-# API
-Two endpoints are provided:
-   * /order
-   * /customer
+Stop:
+```bash
+docker compose down
+```
 
-Each of them supports a POST and a GET. The data model is circular - a customer owns a number of orders, and that order necessarily refers back to the customer which owns it.
-To avoid loops in the serializer, when writing out a Customer or an Order, they're mapped to CustomerDTO and OrderDTO which contain truncated versions of the dependent object - CustomerOrderDTO and OrderCustomerDTO respectively.
+Stop and remove database volume:
+```bash
+docker compose down -v
+```
 
-The API is documented in the OpenAPI file OpenAPI.yaml. Note that this spec includes part of one of the tasks below (the new /products endpoint)
+## CI
+GitHub Actions workflow:
+- File: `.github/workflows/ci.yml`
+- Triggers: push/PR on `main` and `develop`
+- Uses JDK 17
+- Runs:
+  - `./gradlew clean test`
+  - `./gradlew build`
 
-# Tasks
+## OpenAPI
+OpenAPI spec is maintained in:
+- `OpenAPI.yaml`
 
-1. Extend the order endpoint to find a specific order, by ID
-2. Extend the customer endpoint to find customers based on a query string to match a substring of one of the words in their name
-3. Users have complained that in production the GET endpoints can get very slow. The database is unfortunately not co-located with the application server, and there's high latency between the two. Identify if there are any optimisations that can improve performance
-4. Add a new endpoint /products to model products which appear in an order:
-      * A single order contains 1 or more products. 
-      * A product has an ID and a description. 
-      * Add a POST endpoint to create a product
-      * Add a GET endpoint to return all products, and a specific product by ID
-        * In both cases, also return a list of the order IDs which contain those products
-      * Change the orders endpoint to return a list of products contained in the order
+It reflects:
+- Product endpoints
+- Paginated list endpoints
+- Request DTOs (including `CreateOrderRequest.productIds`)
+- Standard error response model
 
-# Bonus points
-1. Implement a CI pipeline on the platform of your choice to build the project and deliver it as a Dockerized image
-
-# Notes on the tasks
-Assume that the project represents a production application.
-Think carefully about the impact on performance when implementing your changes
-The specifications of the tasks have been left deliberately vague. You will be required to exercise judgement about what to deliver - in a real world environment, you would clarify these points in refinement, but since this is a project to be completed without interaction, feel free to make assumptions - but be prepared to defend them when asked.
-There's no CI pipeline associated with this project, but in reality there would be. Consider the things that you would expect that pipeline to verify before allowing your code to be promoted
-Feel free to refactor the codebase if necessary. Bad choices were deliberately made when creating this project.
+## Future Improvements
+- Authentication and authorization
+- API rate limiting
+- Structured audit/event trails
+- Container hardening and vulnerability scanning
+- Dedicated environment profiles and secret management

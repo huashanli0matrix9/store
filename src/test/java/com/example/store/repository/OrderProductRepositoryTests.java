@@ -4,6 +4,7 @@ import com.example.store.config.JpaAuditingConfig;
 import com.example.store.entity.Customer;
 import com.example.store.entity.Order;
 import com.example.store.entity.Product;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -15,10 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@DataJpaTest(properties = {
-        "spring.liquibase.enabled=false",
-        "spring.jpa.hibernate.ddl-auto=create-drop"
-})
+@DataJpaTest(properties = {"spring.liquibase.enabled=false", "spring.jpa.hibernate.ddl-auto=create-drop"})
 @Import(JpaAuditingConfig.class)
 class OrderProductRepositoryTests {
 

@@ -3,6 +3,7 @@ package com.example.store.repository;
 import com.example.store.entity.Customer;
 import com.example.store.entity.Order;
 import com.example.store.entity.Product;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -12,10 +13,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-@SpringBootTest(properties = {
-        "spring.liquibase.enabled=false",
-        "spring.jpa.hibernate.ddl-auto=create-drop"
-})
+@SpringBootTest(properties = {"spring.liquibase.enabled=false", "spring.jpa.hibernate.ddl-auto=create-drop"})
 @AutoConfigureTestDatabase
 class AuditingPersistenceTests {
 

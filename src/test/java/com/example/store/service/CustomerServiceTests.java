@@ -1,19 +1,20 @@
 package com.example.store.service;
 
 import com.example.store.dto.request.CreateCustomerRequest;
-import com.example.store.dto.response.CustomerSummaryResponse;
 import com.example.store.dto.response.CustomerResponse;
+import com.example.store.dto.response.CustomerSummaryResponse;
 import com.example.store.entity.Customer;
 import com.example.store.mapper.CustomerMapper;
 import com.example.store.repository.CustomerRepository;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
