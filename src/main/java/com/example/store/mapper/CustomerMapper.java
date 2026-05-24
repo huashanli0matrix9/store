@@ -1,7 +1,8 @@
 package com.example.store.mapper;
 
-import com.example.store.dto.response.CustomerResponse;
 import com.example.store.dto.response.CustomerOrderResponse;
+import com.example.store.dto.response.CustomerResponse;
+import com.example.store.dto.response.CustomerSummaryResponse;
 import com.example.store.entity.Customer;
 import com.example.store.entity.Order;
 
@@ -29,9 +30,17 @@ public class CustomerMapper {
         if (customers == null) {
             return Collections.emptyList();
         }
-        return customers.stream()
-                .map(this::customerToCustomerResponse)
-                .collect(Collectors.toList());
+        return customers.stream().map(this::customerToCustomerResponse).collect(Collectors.toList());
+    }
+
+    public CustomerSummaryResponse customerToCustomerSummaryResponse(Customer customer) {
+        if (customer == null) {
+            return null;
+        }
+        CustomerSummaryResponse response = new CustomerSummaryResponse();
+        response.setId(customer.getId());
+        response.setName(customer.getName());
+        return response;
     }
 
     private List<CustomerOrderResponse> toCustomerOrderResponses(List<Order> orders) {

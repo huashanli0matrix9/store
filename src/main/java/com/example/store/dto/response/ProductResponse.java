@@ -5,9 +5,8 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class OrderResponse {
+public class ProductResponse {
     private Long id;
     private String description;
-    private OrderCustomerResponse customer;
-    private List<ProductSummaryResponse> products;
+    private List<Long> orderIds;
 }

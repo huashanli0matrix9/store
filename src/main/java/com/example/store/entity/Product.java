@@ -13,13 +13,14 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Customer extends AuditableEntity {
+@Table(name = "product")
+public class Product extends AuditableEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
+    private String description;
 
-    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ManyToMany(mappedBy = "products", fetch = FetchType.LAZY)
     private List<Order> orders = new ArrayList<>();
 }

@@ -5,3 +5,11 @@ databaseChangeLog:
       file: db/changelog/db.changelog-2-rename-order-table.yaml
   - include:
       file: db/changelog/db.changelog-2.yaml
+  - include:
+      file: db/changelog/db.changelog-3-product.yaml
+  - include:
+      file: db/changelog/db.changelog-4-product-test-data.yaml
+  - include:
+      file: db/changelog/db.changelog-5-performance.yaml
+  - include:
+      file: db/changelog/db.changelog-6-security-audit.yaml

@@ -2,6 +2,7 @@ package com.example.store.controller;
 
 import com.example.store.dto.request.CreateCustomerRequest;
 import com.example.store.dto.response.CustomerResponse;
+import com.example.store.dto.response.CustomerSummaryResponse;
 import com.example.store.service.CustomerService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -9,6 +10,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -33,20 +36,18 @@ class CustomerControllerTests {
     private CustomerService customerService;
 
     private CustomerResponse customerResponse;
+    private CustomerSummaryResponse customerSummaryResponse;
     private CreateCustomerRequest createCustomerRequest;
 
     @BeforeEach
     void setUp() {
-        createCustomerRequest = new CreateCustomerRequest();
-        createCustomerRequest.setName("John Doe");
-
-        customerResponse = new CustomerResponse();
-        customerResponse.setId(1L);
-        customerResponse.setName("John Doe");
+        createCustomerRequest = createCustomerRequest("John Doe");
+        customerResponse = customerResponse(1L, "John Doe");
+        customerSummaryResponse = customerSummaryResponse(1L, "John Doe");
     }
 
     @Test
-    void testCreateCustomer() throws Exception {
+    void shouldCreateCustomerSuccessfully() throws Exception {
         when(customerService.createCustomer(any(CreateCustomerRequest.class))).thenReturn(customerResponse);
 
         mockMvc.perform(post("/customer")
@@ -57,18 +58,28 @@ class CustomerControllerTests {
     }
 
     @Test
-    void testGetAllCustomers() throws Exception {
-        when(customerService.getAllCustomers()).thenReturn(List.of(customerResponse));
+    void shouldReturnPaginatedCustomers() throws Exception {
+        when(customerService.getCustomers(any(), any()))
+                .thenReturn(new PageImpl<>(List.of(customerSummaryResponse), PageRequest.of(0, 20), 1));
 
         mockMvc.perform(get("/customer"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$..name").value("John Doe"));
+                .andExpect(jsonPath("$.content[0].name").value("John Doe"));
     }
 
     @Test
-    void testCreateCustomerWithBlankNameShouldReturnBadRequest() throws Exception {
-        CreateCustomerRequest invalidRequest = new CreateCustomerRequest();
-        invalidRequest.setName("   ");
+    void shouldReturnPaginatedCustomersByQuery() throws Exception {
+        when(customerService.getCustomers(any(), any()))
+                .thenReturn(new PageImpl<>(List.of(customerSummaryResponse), PageRequest.of(0, 20), 1));
+
+        mockMvc.perform(get("/customer").param("query", "john"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].name").value("John Doe"));
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenCustomerNameBlank() throws Exception {
+        CreateCustomerRequest invalidRequest = createCustomerRequest("   ");
 
         mockMvc.perform(post("/customer")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -79,5 +90,25 @@ class CustomerControllerTests {
                 .andExpect(jsonPath("$.message").value("Request validation failed"))
                 .andExpect(jsonPath("$.path").value("/customer"))
                 .andExpect(jsonPath("$.details.name").exists());
+    }
+
+    private CreateCustomerRequest createCustomerRequest(String name) {
+        CreateCustomerRequest request = new CreateCustomerRequest();
+        request.setName(name);
+        return request;
+    }
+
+    private CustomerResponse customerResponse(Long id, String name) {
+        CustomerResponse response = new CustomerResponse();
+        response.setId(id);
+        response.setName(name);
+        return response;
+    }
+
+    private CustomerSummaryResponse customerSummaryResponse(Long id, String name) {
+        CustomerSummaryResponse response = new CustomerSummaryResponse();
+        response.setId(id);
+        response.setName(name);
+        return response;
     }
 }
