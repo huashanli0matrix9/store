@@ -1,7 +1,9 @@
 package com.example.store.exception;
 
 import com.example.store.dto.response.ApiErrorResponse;
+
 import jakarta.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -44,7 +46,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiErrorResponse> handleUnexpected(Exception ex, HttpServletRequest request) {
         log.error("Unexpected error while handling request [{} {}]", request.getMethod(), request.getRequestURI(), ex);
         return buildErrorResponse(
-                HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR", "An unexpected error occurred", request, null);
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "INTERNAL_SERVER_ERROR",
+                "An unexpected error occurred",
+                request,
+                null);
     }
 
     private ResponseEntity<ApiErrorResponse> buildErrorResponse(

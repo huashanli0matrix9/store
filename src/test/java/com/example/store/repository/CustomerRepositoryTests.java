@@ -2,6 +2,7 @@ package com.example.store.repository;
 
 import com.example.store.config.JpaAuditingConfig;
 import com.example.store.entity.Customer;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -10,10 +11,7 @@ import org.springframework.data.domain.PageRequest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@DataJpaTest(properties = {
-        "spring.liquibase.enabled=false",
-        "spring.jpa.hibernate.ddl-auto=create-drop"
-})
+@DataJpaTest(properties = {"spring.liquibase.enabled=false", "spring.jpa.hibernate.ddl-auto=create-drop"})
 @Import(JpaAuditingConfig.class)
 class CustomerRepositoryTests {
 

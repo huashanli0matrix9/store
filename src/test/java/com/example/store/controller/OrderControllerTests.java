@@ -46,9 +46,12 @@ class OrderControllerTests {
     @BeforeEach
     void setUp() {
         createOrderRequest = createOrderRequest("Test Order", 1L, List.of(10L, 11L));
-        orderResponse = orderResponse(1L, "Test Order", 1L, "John Doe", List.of(
-                productSummaryResponse(10L, "Keyboard"),
-                productSummaryResponse(11L, "Mouse")));
+        orderResponse = orderResponse(
+                1L,
+                "Test Order",
+                1L,
+                "John Doe",
+                List.of(productSummaryResponse(10L, "Keyboard"), productSummaryResponse(11L, "Mouse")));
         orderSummaryResponse = orderSummaryResponse(1L, "Test Order");
     }
 
@@ -118,7 +121,8 @@ class OrderControllerTests {
 
     @Test
     void shouldReturnNotFoundWhenCustomerMissingOnCreateOrder() throws Exception {
-        when(orderService.createOrder(any(CreateOrderRequest.class))).thenThrow(new NotFoundException("Customer not found: 1"));
+        when(orderService.createOrder(any(CreateOrderRequest.class)))
+                .thenThrow(new NotFoundException("Customer not found: 1"));
 
         mockMvc.perform(post("/order")
                         .contentType(MediaType.APPLICATION_JSON)

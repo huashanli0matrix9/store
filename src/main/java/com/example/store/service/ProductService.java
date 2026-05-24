@@ -7,13 +7,13 @@ import com.example.store.entity.Product;
 import com.example.store.exception.NotFoundException;
 import com.example.store.mapper.ProductMapper;
 import com.example.store.repository.ProductRepository;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -37,7 +37,8 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public ProductResponse getProductById(Long id) {
-        Product product = productRepository.findById(id).orElseThrow(() -> new NotFoundException("Product not found: " + id));
+        Product product =
+                productRepository.findById(id).orElseThrow(() -> new NotFoundException("Product not found: " + id));
         return productMapper.productToProductResponse(product);
     }
 }
