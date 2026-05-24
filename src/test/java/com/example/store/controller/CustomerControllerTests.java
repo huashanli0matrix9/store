@@ -41,20 +41,13 @@ class CustomerControllerTests {
 
     @BeforeEach
     void setUp() {
-        createCustomerRequest = new CreateCustomerRequest();
-        createCustomerRequest.setName("John Doe");
-
-        customerResponse = new CustomerResponse();
-        customerResponse.setId(1L);
-        customerResponse.setName("John Doe");
-
-        customerSummaryResponse = new CustomerSummaryResponse();
-        customerSummaryResponse.setId(1L);
-        customerSummaryResponse.setName("John Doe");
+        createCustomerRequest = createCustomerRequest("John Doe");
+        customerResponse = customerResponse(1L, "John Doe");
+        customerSummaryResponse = customerSummaryResponse(1L, "John Doe");
     }
 
     @Test
-    void testCreateCustomer() throws Exception {
+    void shouldCreateCustomerSuccessfully() throws Exception {
         when(customerService.createCustomer(any(CreateCustomerRequest.class))).thenReturn(customerResponse);
 
         mockMvc.perform(post("/customer")
@@ -65,7 +58,7 @@ class CustomerControllerTests {
     }
 
     @Test
-    void testGetAllCustomers() throws Exception {
+    void shouldReturnPaginatedCustomers() throws Exception {
         when(customerService.getCustomers(any(), any()))
                 .thenReturn(new PageImpl<>(List.of(customerSummaryResponse), PageRequest.of(0, 20), 1));
 
@@ -75,7 +68,7 @@ class CustomerControllerTests {
     }
 
     @Test
-    void testGetCustomersWithQuery() throws Exception {
+    void shouldReturnPaginatedCustomersByQuery() throws Exception {
         when(customerService.getCustomers(any(), any()))
                 .thenReturn(new PageImpl<>(List.of(customerSummaryResponse), PageRequest.of(0, 20), 1));
 
@@ -85,9 +78,8 @@ class CustomerControllerTests {
     }
 
     @Test
-    void testCreateCustomerWithBlankNameShouldReturnBadRequest() throws Exception {
-        CreateCustomerRequest invalidRequest = new CreateCustomerRequest();
-        invalidRequest.setName("   ");
+    void shouldReturnBadRequestWhenCustomerNameBlank() throws Exception {
+        CreateCustomerRequest invalidRequest = createCustomerRequest("   ");
 
         mockMvc.perform(post("/customer")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -98,5 +90,25 @@ class CustomerControllerTests {
                 .andExpect(jsonPath("$.message").value("Request validation failed"))
                 .andExpect(jsonPath("$.path").value("/customer"))
                 .andExpect(jsonPath("$.details.name").exists());
+    }
+
+    private CreateCustomerRequest createCustomerRequest(String name) {
+        CreateCustomerRequest request = new CreateCustomerRequest();
+        request.setName(name);
+        return request;
+    }
+
+    private CustomerResponse customerResponse(Long id, String name) {
+        CustomerResponse response = new CustomerResponse();
+        response.setId(id);
+        response.setName(name);
+        return response;
+    }
+
+    private CustomerSummaryResponse customerSummaryResponse(Long id, String name) {
+        CustomerSummaryResponse response = new CustomerSummaryResponse();
+        response.setId(id);
+        response.setName(name);
+        return response;
     }
 }

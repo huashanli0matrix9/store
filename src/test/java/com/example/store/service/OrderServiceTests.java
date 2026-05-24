@@ -52,29 +52,21 @@ class OrderServiceTests {
 
     @BeforeEach
     void setUp() {
-        request = new CreateOrderRequest();
-        request.setDescription("Test Order");
-        request.setCustomerId(999L);
-        request.setProductIds(List.of(1L, 2L));
+        request = createOrderRequest("Test Order", 999L, List.of(1L, 2L));
     }
 
     @Test
-    void createOrderShouldThrowNotFoundWhenCustomerDoesNotExist() {
+    void shouldThrowNotFoundWhenCustomerDoesNotExistOnCreateOrder() {
         when(customerRepository.findById(999L)).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class, () -> orderService.createOrder(request));
     }
 
     @Test
-    void getOrderByIdShouldReturnOrderWhenExists() {
-        Customer customer = new Customer();
-        customer.setId(1L);
-        customer.setName("John Doe");
+    void shouldReturnOrderWhenGetByIdExists() {
+        Customer customer = customer(1L, "John Doe");
 
-        Order order = new Order();
-        order.setId(10L);
-        order.setDescription("Sample");
-        order.setCustomer(customer);
+        Order order = order(10L, "Sample", customer, List.of());
 
         OrderResponse response = new OrderResponse();
         response.setId(10L);
@@ -89,26 +81,18 @@ class OrderServiceTests {
     }
 
     @Test
-    void getOrderByIdShouldThrowNotFoundWhenMissing() {
+    void shouldThrowNotFoundWhenGetOrderByIdMissing() {
         when(orderRepository.findById(111L)).thenReturn(Optional.empty());
         assertThrows(NotFoundException.class, () -> orderService.getOrderById(111L));
     }
 
     @Test
-    void createOrderShouldReturnResponseWhenProductIdsAreValid() {
-        Customer customer = new Customer();
-        customer.setId(999L);
+    void shouldCreateOrderWhenCustomerAndProductsValid() {
+        Customer customer = customer(999L, null);
+        Product p1 = product(1L, null);
+        Product p2 = product(2L, null);
 
-        Product p1 = new Product();
-        p1.setId(1L);
-        Product p2 = new Product();
-        p2.setId(2L);
-
-        Order savedOrder = new Order();
-        savedOrder.setId(200L);
-        savedOrder.setDescription("Test Order");
-        savedOrder.setCustomer(customer);
-        savedOrder.setProducts(List.of(p1, p2));
+        Order savedOrder = order(200L, "Test Order", customer, List.of(p1, p2));
 
         OrderResponse response = new OrderResponse();
         response.setId(200L);
@@ -124,11 +108,9 @@ class OrderServiceTests {
     }
 
     @Test
-    void createOrderShouldThrowBadRequestWhenAnyProductIsMissing() {
-        Customer customer = new Customer();
-        customer.setId(999L);
-        Product p1 = new Product();
-        p1.setId(1L);
+    void shouldThrowBadRequestWhenAnyProductMissingOnCreateOrder() {
+        Customer customer = customer(999L, null);
+        Product p1 = product(1L, null);
 
         when(customerRepository.findById(999L)).thenReturn(Optional.of(customer));
         when(productRepository.findAllById(List.of(1L, 2L))).thenReturn(List.of(p1));
@@ -137,7 +119,7 @@ class OrderServiceTests {
     }
 
     @Test
-    void getAllOrdersShouldReturnPagedSummaries() {
+    void shouldReturnPagedOrderSummaries() {
         Pageable pageable = PageRequest.of(0, 20);
         Order order = new Order();
         order.setId(1L);
@@ -153,5 +135,36 @@ class OrderServiceTests {
         var actual = orderService.getAllOrders(pageable);
         assertEquals(1, actual.getTotalElements());
         assertEquals("Summary Order", actual.getContent().get(0).getDescription());
+    }
+
+    private CreateOrderRequest createOrderRequest(String description, Long customerId, List<Long> productIds) {
+        CreateOrderRequest createOrderRequest = new CreateOrderRequest();
+        createOrderRequest.setDescription(description);
+        createOrderRequest.setCustomerId(customerId);
+        createOrderRequest.setProductIds(productIds);
+        return createOrderRequest;
+    }
+
+    private Customer customer(Long id, String name) {
+        Customer customer = new Customer();
+        customer.setId(id);
+        customer.setName(name);
+        return customer;
+    }
+
+    private Product product(Long id, String description) {
+        Product product = new Product();
+        product.setId(id);
+        product.setDescription(description);
+        return product;
+    }
+
+    private Order order(Long id, String description, Customer customer, List<Product> products) {
+        Order order = new Order();
+        order.setId(id);
+        order.setDescription(description);
+        order.setCustomer(customer);
+        order.setProducts(products);
+        return order;
     }
 }
