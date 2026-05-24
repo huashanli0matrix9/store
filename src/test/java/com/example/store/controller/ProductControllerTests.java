@@ -43,21 +43,13 @@ class ProductControllerTests {
 
     @BeforeEach
     void setUp() {
-        createProductRequest = new CreateProductRequest();
-        createProductRequest.setDescription("Keyboard");
-
-        productResponse = new ProductResponse();
-        productResponse.setId(1L);
-        productResponse.setDescription("Keyboard");
-        productResponse.setOrderIds(List.of(100L));
-
-        productSummaryResponse = new ProductSummaryResponse();
-        productSummaryResponse.setId(1L);
-        productSummaryResponse.setDescription("Keyboard");
+        createProductRequest = createProductRequest("Keyboard");
+        productResponse = productResponse(1L, "Keyboard", List.of(100L));
+        productSummaryResponse = productSummaryResponse(1L, "Keyboard");
     }
 
     @Test
-    void testCreateProduct() throws Exception {
+    void shouldCreateProductSuccessfully() throws Exception {
         when(productService.createProduct(any(CreateProductRequest.class))).thenReturn(productResponse);
 
         mockMvc.perform(post("/products")
@@ -69,7 +61,7 @@ class ProductControllerTests {
     }
 
     @Test
-    void testGetAllProducts() throws Exception {
+    void shouldReturnPaginatedProducts() throws Exception {
         when(productService.getAllProducts(any()))
                 .thenReturn(new PageImpl<>(List.of(productSummaryResponse), PageRequest.of(0, 20), 1));
 
@@ -79,7 +71,7 @@ class ProductControllerTests {
     }
 
     @Test
-    void testGetProductById() throws Exception {
+    void shouldGetProductByIdSuccessfully() throws Exception {
         when(productService.getProductById(1L)).thenReturn(productResponse);
 
         mockMvc.perform(get("/products/1"))
@@ -89,7 +81,7 @@ class ProductControllerTests {
     }
 
     @Test
-    void testGetProductByIdNotFound() throws Exception {
+    void shouldReturnNotFoundWhenProductMissing() throws Exception {
         when(productService.getProductById(99L)).thenThrow(new NotFoundException("Product not found: 99"));
 
         mockMvc.perform(get("/products/99"))
@@ -98,5 +90,41 @@ class ProductControllerTests {
                 .andExpect(jsonPath("$.code").value("NOT_FOUND"))
                 .andExpect(jsonPath("$.message").value("Product not found: 99"))
                 .andExpect(jsonPath("$.path").value("/products/99"));
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenProductDescriptionBlank() throws Exception {
+        CreateProductRequest invalidRequest = createProductRequest(" ");
+
+        mockMvc.perform(post("/products")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
+                .andExpect(jsonPath("$.message").value("Request validation failed"))
+                .andExpect(jsonPath("$.path").value("/products"))
+                .andExpect(jsonPath("$.details.description").exists());
+    }
+
+    private CreateProductRequest createProductRequest(String description) {
+        CreateProductRequest request = new CreateProductRequest();
+        request.setDescription(description);
+        return request;
+    }
+
+    private ProductResponse productResponse(Long id, String description, List<Long> orderIds) {
+        ProductResponse response = new ProductResponse();
+        response.setId(id);
+        response.setDescription(description);
+        response.setOrderIds(orderIds);
+        return response;
+    }
+
+    private ProductSummaryResponse productSummaryResponse(Long id, String description) {
+        ProductSummaryResponse response = new ProductSummaryResponse();
+        response.setId(id);
+        response.setDescription(description);
+        return response;
     }
 }
