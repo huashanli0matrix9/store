@@ -1,0 +1,14 @@
+.git
+.github
+.gradle
+build
+bin
+.idea
+.vscode
+*.iml
+*.log
+*.tmp
+*.swp
+out
+target
+node_modules
